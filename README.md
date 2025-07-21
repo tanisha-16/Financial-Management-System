@@ -78,9 +78,4 @@ Create a `.env` file in the `server/` folder with the following content:
 ```env
 PORT=5000
 MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
-
-🤝 Contributing
-Contributions, issues, and suggestions are welcome!
-Feel free to fork the repo and submit a pull request.
 
