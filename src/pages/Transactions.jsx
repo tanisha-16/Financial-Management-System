@@ -3,6 +3,7 @@ import { Plus, Edit, Trash2, X } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { motion } from 'framer-motion';
 import { useAuth } from '../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import * as XLSX from 'xlsx';
 import { budgetService } from '../services/api.js';
 
@@ -19,6 +20,7 @@ const defaultForm = {
 
 const Transactions = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -72,6 +74,9 @@ const Transactions = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    setShowForm(false);
+    setEditId(null);
+    setForm(defaultForm);
     setFormLoading(true);
     try {
       const method = editId ? 'PUT' : 'POST';
@@ -85,21 +90,20 @@ const Transactions = () => {
         body: JSON.stringify({ ...form, amount: Number(form.amount) }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to save transaction');
-      toast.success(editId ? 'Transaction updated!' : 'Transaction added!');
-      setShowForm(false);
-      setEditId(null);
-      setForm(defaultForm);
+      if (!res.ok) {
+        // No toast, no error message
+        return;
+      }
       fetchTransactions();
     } catch (err) {
-      toast.error(err.message || 'Failed to save transaction');
+      // No toast, no error message
     } finally {
       setFormLoading(false);
     }
   };
 
   const handleEdit = (tx) => {
-    setEditId(tx._id || tx.id);
+    setEditId(tx._id); // Always use _id
     setForm({
       title: tx.title,
       amount: tx.amount,
@@ -259,7 +263,7 @@ const Transactions = () => {
             )}
             {filtered.map((tx, index) => (
               <motion.div
-                key={tx._id || tx.id}
+                key={tx._id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05 }}
@@ -275,14 +279,14 @@ const Transactions = () => {
                   </div>
                   <div className="text-xs text-gray-500">{tx.status}</div>
                   <button onClick={() => handleEdit(tx)} className="text-blue-600 hover:text-blue-800"><Edit className="h-4 w-4" /></button>
-                  <button onClick={() => setDeleteId(tx._id || tx.id)} className="text-red-600 hover:text-red-800"><Trash2 className="h-4 w-4" /></button>
+                  <button onClick={() => setDeleteId(tx._id)} className="text-red-600 hover:text-red-800"><Trash2 className="h-4 w-4" /></button>
                 </div>
-                {deleteId === (tx._id || tx.id) && (
+                {deleteId === tx._id && (
                   <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
                     <div className="bg-white p-6 rounded shadow-xl space-y-4">
                       <div>Are you sure you want to delete this transaction?</div>
                       <div className="flex space-x-2">
-                        <button onClick={() => handleDelete(tx._id || tx.id)} disabled={deleteLoading} className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50">{deleteLoading ? 'Deleting...' : 'Delete'}</button>
+                        <button onClick={() => handleDelete(tx._id)} disabled={deleteLoading} className="bg-red-600 text-white px-4 py-2 rounded disabled:opacity-50">{deleteLoading ? 'Deleting...' : 'Delete'}</button>
                         <button onClick={() => setDeleteId(null)} className="bg-gray-200 px-4 py-2 rounded">Cancel</button>
                       </div>
                     </div>

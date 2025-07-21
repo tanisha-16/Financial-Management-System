@@ -17,7 +17,7 @@ exports.createTransaction = async (req, res) => {
     updated_at: new Date(),
   };
   const result = await db.collection('transactions').insertOne(newTransaction);
-  res.json({ ...newTransaction, id: result.insertedId });
+  res.json({ ...newTransaction, _id: result.insertedId });
 };
 
 exports.updateTransaction = async (req, res) => {
