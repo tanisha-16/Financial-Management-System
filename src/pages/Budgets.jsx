@@ -43,6 +43,9 @@ const Budgets = () => {
 
   const handleFormSubmit = async (e) => {
     e.preventDefault();
+    setShowForm(false);
+    setEditId(null);
+    setForm({ name: '', category: '', amount: '', period: 'monthly' });
     setFormLoading(true);
     try {
       if (editId) {
@@ -51,7 +54,6 @@ const Budgets = () => {
           amount: Number(form.amount),
         });
         setBudgets(budgets.map(b => (b.id === editId || b._id === editId ? updated : b)));
-        toast.success('Budget updated!');
       } else {
         const newBudget = await budgetService.createBudget({
           ...form,
@@ -59,13 +61,9 @@ const Budgets = () => {
           spent: 0,
         });
         setBudgets([newBudget, ...budgets]);
-        toast.success('Budget created!');
       }
-      setShowForm(false);
-      setEditId(null);
-      setForm({ name: '', category: '', amount: '', period: 'monthly' });
     } catch (err) {
-      toast.error(err.message || 'Failed to save budget');
+      // No toast, no error message
     } finally {
       setFormLoading(false);
     }
